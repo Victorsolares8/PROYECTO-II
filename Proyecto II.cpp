@@ -1,0 +1,167 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+struct Producto {
+    string nombre;
+    string codigo;
+    float precio;
+    string proveedor;
+    int existencia;
+    char estado; // 'A' = Aprobado, 'N' = No Aprobado
+    float descuento;
+
+    // Método para mostrar el producto
+    void mostrar() const {
+        cout << "Nombre: " << nombre << ", Código: " << codigo << ", Precio: " << precio 
+             << ", Proveedor: " << proveedor << ", Existencia: " << existencia 
+             << ", Estado: " << estado << ", Descuento: " << descuento << "%" << endl;
+    }
+};
+
+vector<Producto> cargarProductos(const string& filename) {
+    vector<Producto> productos;
+    ifstream file(filename);
+    if (file.is_open()) {
+        Producto prod;
+        while (file >> prod.nombre >> prod.codigo >> prod.precio >> prod.proveedor 
+                    >> prod.existencia >> prod.estado >> prod.descuento) {
+            productos.push_back(prod);
+        }
+        file.close();
+    }
+    return productos;
+}
+
+void guardarProductos(const string& filename, const vector<Producto>& productos) {
+    ofstream file(filename);
+    for (const auto& prod : productos) {
+        file << prod.nombre << " " << prod.codigo << " " << prod.precio << " "
+             << prod.proveedor << " " << prod.existencia << " " << prod.estado << " "
+             << prod.descuento << endl;
+    }
+    file.close();
+}
+
+bool codigoExistente(const vector<Producto>& productos, const string& codigo) {
+    for (const auto& prod : productos) {
+        if (prod.codigo == codigo) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void agregarProducto(vector<Producto>& productos) {
+    Producto nuevoProd;
+    cout << "Ingrese nombre: ";
+    cin >> nuevoProd.nombre;
+    cout << "Ingrese código: ";
+    cin >> nuevoProd.codigo;
+
+    if (codigoExistente(productos, nuevoProd.codigo)) {
+        cout << "Error: El código de producto ya existe." << endl;
+        return;
+    }
+
+    cout << "Ingrese precio: ";
+    cin >> nuevoProd.precio;
+    cout << "Ingrese proveedor: ";
+    cin >> nuevoProd.proveedor;
+    cout << "Ingrese existencia: ";
+    cin >> nuevoProd.existencia;
+    cout << "Ingrese estado (A/N): ";
+    cin >> nuevoProd.estado;
+    cout << "Ingrese descuento: ";
+    cin >> nuevoProd.descuento;
+
+    productos.push_back(nuevoProd);
+    guardarProductos("productos.txt", productos);
+    cout << "Producto agregado con éxito." << endl;
+}
+
+void buscarProducto(const vector<Producto>& productos) {
+    string criterio;
+    cout << "Buscar por código o nombre: ";
+    cin >> criterio;
+
+    bool encontrado = false;
+    for (const auto& prod : productos) {
+        if (prod.codigo == criterio || prod.nombre.find(criterio) != string::npos) {
+            prod.mostrar();
+            encontrado = true;
+        }
+    }
+
+    if (!encontrado) {
+        cout << "No se encontraron productos." << endl;
+    }
+}
+
+void modificarProducto(vector<Producto>& productos) {
+    string codigo;
+    cout << "Ingrese el código del producto a modificar: ";
+    cin >> codigo;
+
+    for (auto& prod : productos) {
+        if (prod.codigo == codigo) {
+            cout << "Modificar producto: " << endl;
+            cout << "Nombre actual: " << prod.nombre << ", Ingrese nuevo nombre: ";
+            cin >> prod.nombre;
+            cout << "Precio actual: " << prod.precio << ", Ingrese nuevo precio: ";
+            cin >> prod.precio;
+            cout << "Proveedor actual: " << prod.proveedor << ", Ingrese nuevo proveedor: ";
+            cin >> prod.proveedor;
+            cout << "Existencia actual: " << prod.existencia << ", Ingrese nueva existencia: ";
+            cin >> prod.existencia;
+            cout << "Estado actual: " << prod.estado << ", Ingrese nuevo estado (A/N): ";
+            cin >> prod.estado;
+            cout << "Descuento actual: " << prod.descuento << ", Ingrese nuevo descuento: ";
+            cin >> prod.descuento;
+
+            guardarProductos("productos.txt", productos);
+            cout << "Producto modificado con éxito." << endl;
+            return;
+        }
+    }
+    cout << "Producto no encontrado." << endl;
+}
+
+int main() {
+    vector<Producto> productos = cargarProductos("productos.txt");
+    int opcion;
+
+    do {
+        cout << "\nMenu de Productos:\n";
+        cout << "1. Agregar producto\n";
+        cout << "2. Buscar producto\n";
+        cout << "3. Modificar producto\n";
+        cout << "4. Salir\n";
+        cout << "Seleccione una opción: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                agregarProducto(productos);
+                break;
+            case 2:
+                buscarProducto(productos);
+                break;
+            case 3:
+                modificarProducto(productos);
+                break;
+            case 4:
+                cout << "Saliendo..." << endl;
+                break;
+            default:
+                cout << "Opción no válida. Intente de nuevo." << endl;
+                break;
+        }
+    } while (opcion != 4);
+
+    return 0;
+}
+
